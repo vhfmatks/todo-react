@@ -38,11 +38,12 @@ export default class Popup extends Component {
                 <option value="Y">Y</option>
                 <option value="N">N</option>
             </select>
+
         </div>
-
-
-        <button className="btn btn-outline-primary" onClick={()=>onSave(id , this.state.todo, this.state.commit)}>저장</button>
-        <button className="btn btn-outline-danger" onClick={onCancel}>취소</button>
+        <div className="input-group mb-3">
+            <button className="btn btn-outline-primary" onClick={()=>onSave(id , this.state.todo, this.state.commit)}>저장</button>
+            <button className="btn btn-outline-danger" onClick={onCancel}>취소</button>
+        </div>
       </div>
     )
   }

@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-
 import Table from './components/Table';
 
-const url = "http://yhchoi.iptime.org:8001";
+import getData from './service/get.service';
+import putData from './service/put.service';
+import postData from './service/post.service';
+
 class App extends Component {
   
   constructor(props){
@@ -11,39 +12,47 @@ class App extends Component {
     this.state = {
       data : {},
       total : 0,
-      limit : 4,
+      limit : 5,
       page  : 0,
     }
-    this.getData = this.getData.bind(this);
   }
   componentDidMount(){
     this.getData(this.state.limit, this.state.page);
   }
   getData = (limit, page) =>{
-    axios.get(`http://yhchoi.iptime.org:8001/todos?limit=${limit}&page=${page}`)
+    this.setState({
+      limit , page
+    })
+    getData(limit, page)
     .then( (result)=> {
       this.setState({
-        data  : result.data.data,
+        data : result.data.data,
         total : result.data.total_cnt
-      });
+      })
+    })
+    .catch( (err) => {
+      alert(err);
     })
   }
   changeData(id, todo, is_commit){
-    axios.put(`http://yhchoi.iptime.org:8001/todos`,
-    {
-      id,todo,is_commit
-    }).then( (result) => {
-      if(result.data.status === "error"){
-        alert(result.data.data);
-      }
-      else {
-        window.location.reload();
-      }
-    }).catch( (err) => {
+    putData( {id, todo, is_commit} )
+    .then ( ( result ) =>{
+      this.getData(this.state.limit, this.state.page);
+    })
+    .catch( (err) => {
       alert(err);
-    }); 
+    })
   }
-
+  insertData( todo, ref ){
+    postData( { todo, ref })
+    .then ( ( result ) =>{
+      this.getData(this.state.limit, this.state.page);
+    })
+    .catch( (err) => {
+      alert(err);
+      this.getData(this.state.limit, this.state.page);
+    })
+  }
   onPageClick(page){
     this.setState({page})
   }
@@ -57,25 +66,14 @@ class App extends Component {
     }else {
       return (
         <div className="container">
+          <h1>TODO LIST</h1> 
           <Table data={this.state.data}
                  total={this.state.total}
                  limit={this.state.limit}
                  onPageClick={this.getData}
-                 changeData={this.changeData}></Table>
-          <div className="btn-group mr-2">
-          {
-            Array.from({ length:Math.ceil(this.state.total/this.state.limit)} ,
-                        (v, k) => {
-                          return( 
-                            <button className="btn btn-secondary" key={k}
-                                    onClick={()=>this.getData(this.state.limit,k)}> 
-                              {k+1} 
-                            </button> 
-                          )
-                        })            
-          }
-          </div>
-          </div>
+                 changeData={(id,todo,commit)=>this.changeData(id,todo,commit)}
+                 insertData={(todo,ref)=>this.insertData(todo,ref)}></Table>
+        </div>
       );
     }
   }
